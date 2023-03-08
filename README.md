@@ -29,12 +29,14 @@
 > - [read-list](https://github.com/eryajf/read-list)：📖 优质内容订阅，阅读方为根本
 > - [awesome-github-profile-readme-chinese](https://github.com/eryajf/awesome-github-profile-readme-chinese)：🦩 优秀的中文区个人主页搜集
 
+🚜 我还创建了一个项目[awesome-chatgpt-answer](https://github.com/eryajf/awesome-chatgpt-answer)：记录那些问得好，答得妙的时刻，欢迎提交你与ChatGPT交互过程中遇到的那些精妙对话。
 
 ## 功能简介
 
 - 支持在钉钉群聊中添加机器人，通过@机器人进行聊天交互。
 - 提问支持单聊与串聊两种模式，通过@机器人发关键字切换。
 - 支持添加代理，通过配置化指定。
+- 支持自定义指定的模型，通过配置化指定。
 - 支持自定义默认的聊天模式，通过配置化指定。
 
 ## 使用前提
@@ -78,10 +80,10 @@
 
 ```sh
 # 运行项目
-$ docker run -itd --name chatgpt -p 8090:8090 -e APIKEY=换成你的key -e SESSION_TIMEOUT=600 -e HTTP_PROXY="" -e DEFAULT_MODE="单聊" --restart=always  dockerproxy.com/eryajf/chatgpt-dingtalk:latest
+$ docker run -itd --name chatgpt -p 8090:8090 --add-host="host.docker.internal:host-gateway" -e APIKEY=换成你的key -e MODEL="gpt-3.5-turbo" -e SESSION_TIMEOUT=600 -e HTTP_PROXY="http://host.docker.internal:15732" -e DEFAULT_MODE="单聊" --restart=always  dockerproxy.com/eryajf/chatgpt-dingtalk:latest
 ```
 
-`📢 注意：`如果你使用docker部署，那么proxy指定地址的时候，请指定宿主机的IP，而不要写成127，以免代理不生效。
+`📢 注意：`如果使用docker部署，那么proxy地址可以直接使用如上方式部署，`host.docker.internal`会指向容器所在宿主机的IP，只需要更改端口为你的代理端口即可。参见：[Docker容器如何优雅地访问宿主机网络](https://wiki.eryajf.net/pages/674f53/)
 
 运行命令中映射的配置文件参考下边的配置文件说明。
 
@@ -96,6 +98,16 @@ $ docker run -itd --name chatgpt -p 8090:8090  -v `pwd`/config.json:/app/config.
 ```
 
 其中配置文件参考下边的配置文件说明。
+
+`第三种：使用 docker compose 运行`
+
+```sh
+$ wget https://raw.githubusercontent.com/eryajf/chatgpt-dingtalk/main/docker-compose.yml
+
+$ nano docker-compose.yml # 编辑 APIKEY 等信息
+
+$ docker compose up -d
+```
 
 注意，不论通过上边哪种docker方式部署，都需要配置Nginx代理，当然你直接通过服务器外网IP也可以。
 
@@ -157,6 +169,10 @@ $ curl --location --request POST 'http://chat.eryajf.net/' \
 
 如果手动请求没有问题，那么就可以在钉钉群里与机器人进行对话了。
 
+`2023-03-08`补充，我发现也可以不在群里艾特机器人聊天，还可点击机器人，然后点击发消息，通过与机器人直接对话进行聊天：
+
+![image](https://user-images.githubusercontent.com/33259379/223607306-2ac836a2-7ce5-4a12-a16e-bec40b22d8d6.png)
+
 `帮助列表`
 
 > 艾特机器人发送空内容或者帮助，会返回帮助列表。
@@ -191,7 +207,7 @@ $ curl --location --request POST 'http://chat.eryajf.net/' \
 ```
 $ tar xf chatgpt-dingtalk-v0.0.4-darwin-arm64.tar.gz
 $ cd chatgpt-dingtalk-v0.0.4-darwin-arm64
-$ cp config.dev.json # 根据情况调整配置文件内容
+$ cp config.dev.json  config.json # 然后根据情况调整配置文件内容
 $ ./chatgpt-dingtalk  # 直接运行
 
 # 如果要守护在后台运行
@@ -221,6 +237,7 @@ $ go run main.go
 ```json
 {
     "api_key": "xxxxxxxxx",   // openai api_key
+    "model": "gpt-3.5-turbo", // 指定模型，默认为 gpt-3.5-turbo ,具体选项参考官网训练场
     "session_timeout": 600,   // 会话超时时间,默认600秒,在会话时间内所有发送给机器人的信息会作为上下文
     "http_proxy": "",         // 指定请求时使用的代理，如果为空，则不使用代理
     "default_mode": "单聊"    // 默认对话模式，可根据实际场景自定义，如果不设置，默认为单聊
@@ -228,6 +245,8 @@ $ go run main.go
 ```
 
 ## 常见问题
+
+如何更好地使用ChatGPT：这里有[许多案例](https://github.com/f/awesome-chatgpt-prompts)可供参考。
 
 一些常见的问题，我单独开issue放在这里：[点我](https://github.com/eryajf/chatgpt-dingtalk/issues/44)，可以查看这里辅助你解决问题，如果里边没有，请对历史issue进行搜索(不要提交重复的issue)，也欢迎大家补充。
 
